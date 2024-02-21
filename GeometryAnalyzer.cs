@@ -140,8 +140,6 @@ namespace DRT.core
 
                 GeometryElement tgtGeometry = targetElement.get_Geometry(new Options());
 
-
-
                 foreach (ElementId rebarId in rebarIds)
                 {
                     Rebar rebar = doc.GetElement(rebarId) as Rebar;
@@ -153,11 +151,11 @@ namespace DRT.core
                         // modify the rebar geometry to match the target element
 
 
-                        rebar.SetHostId(doc, targetElement.Id);
+                       // rebar.SetHostId(doc, targetElement.Id);
 
                         //rebar.
 
-                        FaceMatcher.GetEquivalentFaces(srcElement, targetElement);
+                        var match = FaceMatcher.GetEquivalentFaces(srcElement, targetElement);
 
 
                         Console.WriteLine();
@@ -173,16 +171,6 @@ namespace DRT.core
                         // and the details of the Rebar and Element geometry.
                     }
                 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -228,22 +216,31 @@ namespace DRT.core
 
         private static List<Face> ExtractFaces(Element element)
         {
-            var faces = new List<Face>();
-            Options geomOptions = new Options();
-            geomOptions.ComputeReferences = true; // Necessary to obtain references for creating constraints later
-            geomOptions.DetailLevel = ViewDetailLevel.Fine; // Use fine detail level to get all geometries
+            var options = new Options();
+            GeometryElement geometryElement = element.get_Geometry(options);
+            List<Face> faces = new List<Face>();
 
-            GeometryElement geometryElement = element.get_Geometry(geomOptions);
+            // Iterate through geometry instances
             foreach (GeometryObject geomObj in geometryElement)
             {
-                if (geomObj is Solid solid)
+                if (geomObj is GeometryInstance geometryInstance)
                 {
-                    foreach (Face face in solid.Faces)
+                    GeometryElement instanceGeometry = geometryInstance.GetInstanceGeometry();
+
+                    // Iterate through solids in the geometry instance
+                    foreach (GeometryObject instanceGeomObj in instanceGeometry)
                     {
-                        faces.Add(face);
+                        if (instanceGeomObj is Solid solid && solid.Faces.Size > 0)
+                        {
+                            foreach (Face face in solid.Faces)
+                            {
+                                faces.Add(face);
+                            }
+                        }
                     }
                 }
             }
+
             return faces;
         }
 
