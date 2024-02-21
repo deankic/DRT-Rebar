@@ -262,8 +262,18 @@ namespace DRT.core
 
         private static bool FacesAreEquivalent(XYZ srcNormal, double srcArea, XYZ targetNormal, double targetArea)
         {
-            // Implement your logic to determine if faces are equivalent, e.g., normals are equal and areas are within a tolerance
-            return false;
+            // Define tolerances for comparison
+            double normalTolerance = 0.01; // Tolerance for normal vector direction difference
+            double areaTolerance = 0.1; // Tolerance for area difference
+
+            // Check if normals are equivalent (i.e., their difference is within the tolerance)
+            bool normalsEquivalent = (srcNormal.Normalize().Subtract(targetNormal.Normalize())).GetLength() < normalTolerance;
+
+            // Check if areas are equivalent (i.e., their difference is within the tolerance)
+            bool areasEquivalent = Math.Abs(srcArea - targetArea) < areaTolerance;
+
+            // Return true if both normals and areas are equivalent
+            return normalsEquivalent && areasEquivalent;
         }
     }
 
